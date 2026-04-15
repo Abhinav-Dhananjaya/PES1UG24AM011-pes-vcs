@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <openssl/sha.h>
+#include <openssl/evp.h>
 
 // ─── PROVIDED ────────────────────────────────────────────────────────────────
 
@@ -37,10 +37,12 @@ int hex_to_hash(const char *hex, ObjectID *id_out) {
 }
 
 void compute_hash(const void *data, size_t len, ObjectID *id_out) {
-    SHA256_CTX ctx;
-    SHA256_Init(&ctx);
-    SHA256_Update(&ctx, data, len);
-    SHA256_Final(id_out->hash, &ctx);
+    unsigned int hash_len;
+    EVP_MD_CTX *ctx = EVP_MD_CTX_new();
+    EVP_DigestInit_ex(ctx, EVP_sha256(), NULL);
+    EVP_DigestUpdate(ctx, data, len);
+    EVP_DigestFinal_ex(ctx, id_out->hash, &hash_len);
+    EVP_MD_CTX_free(ctx);
 }
 
 // Get the filesystem path where an object should be stored.
@@ -116,8 +118,6 @@ int object_write(ObjectType type, const void *data, size_t len, ObjectID *id_out
 //   - compute_hash       : re-hashing the read data for integrity verification
 //   - memcmp             : comparing the computed hash against the requested hash
 //   - malloc, memcpy     : allocating and returning the extracted data
-//
-// The caller is responsible for calling free(*data_out).
 //
 // The caller is responsible for calling free(*data_out).
 // Returns 0 on success, -1 on error (file not found, corrupt, etc.).

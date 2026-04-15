@@ -53,7 +53,7 @@ If unset, it defaults to `"PES User <pes@localhost>"`.
 | `tree.h`           | Tree object interface                | Do not modify                                      |
 | `tree.c`           | Tree serialization and construction  | Implement `tree_from_index`                        |
 | `index.h`          | Staging area interface               | Do not modify                                      |
-| `index.c`          | Staging area (text-based index file) | Implement `index_load`, `index_save`, `index_add`, |
+| `index.c`          | Staging area (text-based index file) | Implement `index_load`, `index_save`, `index_add`  |
 | `commit.h`         | Commit object interface              | Do not modify                                      |
 | `commit.c`         | Commit creation and history          | Implement `commit_create`                          |
 | `pes.c`            | CLI entry point and command dispatch | Do not modify                                      |
@@ -420,7 +420,7 @@ The test program verifies:
 
 ### What to Implement
 
-Open `index.c`. Four functions are marked `// TODO`:
+Open `index.c`. Three functions are marked `// TODO`:
 
 1. **`index_load`** — Reads the text-based `.pes/index` file into an `Index` struct.
    - If the file doesn't exist, initializes an empty index (this is not an error)
@@ -439,15 +439,15 @@ Open `index.c`. Four functions are marked `// TODO`:
 
 ```
 Staged changes:
-    new file:   hello.txt
-    modified:   src/main.c
+  staged:     hello.txt
+  staged:     src/main.c
 
 Unstaged changes:
-    modified:   README.md
-    deleted:    old_file.txt
+  modified:   README.md
+  deleted:    old_file.txt
 
 Untracked files:
-    notes.txt
+  untracked:  notes.txt
 ```
 
 If a section has no entries, print the header followed by `(nothing to show)`.
@@ -474,11 +474,11 @@ cat .pes/index    # Human-readable text format
 
 **Filesystem Concepts:** Linked structures on disk, reference files, atomic pointer updates
 
-**Files:** `commit.h` (read), `commit.c` (implement all TODO functions), `pes.c` (implement `cmd_commit`)
+**Files:** `commit.h` (read), `commit.c` (implement all TODO functions)
 
 ### What to Implement
 
-Open `commit.c`. Three functions are marked `// TODO`:
+Open `commit.c`. One function is marked `// TODO`:
 
 1. **`commit_create`** — The main commit function:
    - Builds a tree from the index using `tree_from_index()` (**not** from the working directory — commits snapshot the staged state)
@@ -486,12 +486,7 @@ Open `commit.c`. Three functions are marked `// TODO`:
    - Gets the author string from `pes_author()` (defined in `pes.h`)
    - Writes the commit object, then updates HEAD
 
-`commit_parse`, `commit_serialize`, and `commit_walk` are already implemented — read them to understand the commit format before writing `commit_create`.
-
-Also implement **`cmd_commit`** in `pes.c`:
-- Parse `-m <message>` from command-line arguments
-- If `-m` is missing, print: `error: commit requires a message (-m "message")`
-- On success, print: `Committed: <first-12-hex-chars>... <message>`
+`commit_parse`, `commit_serialize`, `commit_walk`, `head_read`, and `head_update` are already implemented — read them to understand the commit format before writing `commit_create`.
 
 The commit text format is specified in the comment at the top of `commit.c`.
 
@@ -573,7 +568,6 @@ The following questions cover filesystem concepts beyond the implementation scop
 | `tree.c`       | Tree serialization and construction      |
 | `index.c`      | Staging area implementation              |
 | `commit.c`     | Commit creation and history walking      |
-| `pes.c`        | CLI entry point with `cmd_commit`        |
 
 ### Analysis Questions (written answers)
 
